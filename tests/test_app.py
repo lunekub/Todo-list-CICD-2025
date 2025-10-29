@@ -257,17 +257,19 @@ class TestTodoAPI:
         data = response.get_json()
         assert data['success'] is False
 
-    @patch('app.routes.db.session.commit')
-    def test_update_todo_database_error(self, mock_commit, client, app):
+    def test_update_todo_database_error(self, client, app):
         with app.app_context():
             todo = Todo(title='Test')
             db.session.add(todo)
             db.session.commit()
             todo_id = todo.id
 
-        mock_commit.side_effect = SQLAlchemyError('Database error')
-        response = client.put(f'/api/todos/{todo_id}', json={'title': 'New'})
-        assert response.status_code == 500
+        # Patch only the commit used by the route during the update call so the
+        # initial creation above is not affected by the mock.
+        with patch('app.routes.db.session.commit') as mock_commit:
+            mock_commit.side_effect = SQLAlchemyError('Database error')
+            response = client.put(f'/api/todos/{todo_id}', json={'title': 'New'})
+            assert response.status_code == 500
 
     def test_delete_todo(self, client, app):
         with app.app_context():

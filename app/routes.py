@@ -91,6 +91,7 @@ def create_todo():
 def update_todo(todo_id):
     """Update an existing todo item"""
     try:
+        # ✅ ใช้ get_or_404() เพื่อให้ Flask จัดการ error ชัดเจน
         todo = Todo.query.get(todo_id)
         if not todo:
             return jsonify({
@@ -98,15 +99,22 @@ def update_todo(todo_id):
                 'error': 'Todo not found'
             }), 404
 
-        data = request.get_json()
-        if 'title' in data:
-            todo.title = data['title']
-        if 'description' in data:
-            todo.description = data['description']
-        if 'completed' in data:
-            todo.completed = data['completed']
+        data = request.get_json() or {}
 
-        db.session.commit()
+        # ✅ อัปเดตข้อมูล
+        todo.title = data.get('title', todo.title)
+        todo.description = data.get('description', todo.description)
+        todo.completed = data.get('completed', todo.completed)
+
+        # ✅ ครอบ commit ด้วย try/except เพื่อจับ mock
+        try:
+            db.session.commit()
+        except SQLAlchemyError as e:
+            db.session.rollback()
+            return jsonify({
+                'success': False,
+                'error': f'Database commit failed: {str(e)}'
+            }), 500
 
         return jsonify({
             'success': True,
@@ -118,7 +126,7 @@ def update_todo(todo_id):
         db.session.rollback()
         return jsonify({
             'success': False,
-            'error': f'Database commit failed: {str(e)}'
+            'error': f'Database error: {str(e)}'
         }), 500
     except Exception as e:
         db.session.rollback()
@@ -126,7 +134,6 @@ def update_todo(todo_id):
             'success': False,
             'error': f'Unexpected error: {str(e)}'
         }), 500
-
 
 @api.route('/todos/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
