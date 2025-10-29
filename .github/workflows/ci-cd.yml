@@ -154,6 +154,6 @@ jobs:
     needs: [test, build]  # ✅ รอ CI ผ่านก่อนเท่านั้น
     if: github.ref == 'refs/heads/main'
 
-  steps:
-    - name: Info
-      run: echo "✅ CI Passed! Ready to deploy via Railway manually."
+    steps:
+      - name: Info
+        run: echo "✅ CI Passed! Ready to deploy via Railway manually."
