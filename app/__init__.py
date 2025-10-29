@@ -23,7 +23,7 @@ def create_app(config_name=None):
                 "http://localhost:3000",
                 "http://localhost:5000",
                 "https://*.github.io",
-                "https://your-username.github.io"
+                "https://lunekub.github.io"
             ],
             "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
             "allow_headers": ["Content-Type"],
