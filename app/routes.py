@@ -91,9 +91,10 @@ def create_todo():
 def update_todo(todo_id):
     """Update an existing todo item"""
     try:
-        # Use the session get to ensure we query the current session directly.
-        # This avoids edge-cases where patching `db.session.commit` could
-        # interfere with the model-query path used by `Todo.query.get()` in tests.
+    # Use the session get to ensure we query the current session directly.
+    # This avoids edge-cases where patching `db.session.commit`
+    # could interfere with the model-query path used by
+    # `Todo.query.get()` in tests.
         todo = db.session.get(Todo, todo_id)
         if not todo:
             return jsonify({
@@ -136,7 +137,8 @@ def update_todo(todo_id):
             'success': False,
             'error': f'Unexpected error: {str(e)}'
         }), 500
- 
+
+
 @api.route('/todos/<int:todo_id>', methods=['DELETE'])
 def delete_todo(todo_id):
     """Delete a todo item"""
