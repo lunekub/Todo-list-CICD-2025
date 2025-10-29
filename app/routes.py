@@ -90,16 +90,15 @@ def create_todo():
 @api.route('/todos/<int:todo_id>', methods=['PUT'])
 def update_todo(todo_id):
     """Update an existing todo item"""
-    todo = Todo.query.get(todo_id)
-    if not todo:
-        return jsonify({
-            'success': False,
-            'error': 'Todo not found'
-        }), 404
-
-    data = request.get_json()
-
     try:
+        todo = Todo.query.get(todo_id)
+        if not todo:
+            return jsonify({
+                'success': False,
+                'error': 'Todo not found'
+            }), 404
+
+        data = request.get_json()
         if 'title' in data:
             todo.title = data['title']
         if 'description' in data:
@@ -114,11 +113,18 @@ def update_todo(todo_id):
             'data': todo.to_dict(),
             'message': 'Todo updated successfully'
         }), 200
+
     except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({
             'success': False,
-            'error': f'Failed to update todo: {str(e)}'
+            'error': f'Database commit failed: {str(e)}'
+        }), 500
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'Unexpected error: {str(e)}'
         }), 500
 
 
