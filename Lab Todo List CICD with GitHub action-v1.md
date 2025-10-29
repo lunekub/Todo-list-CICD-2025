@@ -1380,15 +1380,79 @@ start htmlcov/index.html  # Windows
 ```
 
 ## แนบรูปผลการทดลองการทดสอบระบบ
-```plaintext
-# แนบรูปผลการทดลองที่นี่
 
-``` 
+![alt text](image.png)
+
 ## คำถามการทดลอง
 ให้จับคู่ Code ส่วนของการทดสอบ กับ Code การทำงาน มาอย่างน้อย 3 ฟังก์ชัน พร้อมอธิบายการทำงานของแต่ละกรณี
 ```plaintext
-# ตอบคำถามที่นี่
+def test_create_todo_with_full_data(self, client):
+    todo_data = {'title': 'Test Todo', 'description': 'This is a test todo'}
+    response = client.post('/api/todos', json=todo_data)
+    assert response.status_code == 201
+    assert response.get_json()['success'] is True
 
+@api.route('/todos', methods=['POST'])
+def create_todo():
+    data = request.get_json()
+    title = data.get('title')
+    description = data.get('description', '')
+    if not title:
+        return jsonify({'success': False, 'error': 'Title is required'}), 400
+    todo = Todo(title=title, description=description)
+    db.session.add(todo)
+    db.session.commit()
+    return jsonify({'success': True, 'data': todo.to_dict()}), 201
+
+อธิบาย:
+Test นี้ส่งข้อมูล JSON มาจริง ๆ เพื่อสร้าง Todo ใหม่
+ทดสอบว่า API /api/todos สามารถรับค่าได้, สร้างใน DB ได้, และตอบกลับด้วย 201 Created
+ถ้าโค้ดหลักทำงานถูกต้อง จะคืนค่า success=True
+
+def test_get_todo_by_id(self, client, app):
+    with app.app_context():
+        todo = Todo(title='Test Todo', description='Test Description')
+        db.session.add(todo)
+        db.session.commit()
+        todo_id = todo.id
+    response = client.get(f'/api/todos/{todo_id}')
+    assert response.status_code == 200
+
+@api.route('/todos/<int:todo_id>', methods=['GET'])
+def get_todo_by_id(todo_id):
+    todo = Todo.query.get(todo_id)
+    if not todo:
+        return jsonify({'success': False, 'error': 'Todo not found'}), 404
+    return jsonify({'success': True, 'data': todo.to_dict()}), 200
+
+อธิบาย:
+Test นี้สร้าง Todo ตัวอย่างไว้ในฐานข้อมูลก่อน
+แล้วเรียก endpoint /api/todos/{id}
+ทดสอบว่าระบบสามารถดึงข้อมูลกลับมาได้ถูกต้องและส่งสถานะ 200 OK
+
+@patch('app.routes.db.session.commit')
+def test_create_todo_database_error(self, mock_commit, client):
+    mock_commit.side_effect = SQLAlchemyError('Database error')
+    response = client.post('/api/todos', json={'title': 'Test'})
+    assert response.status_code == 500
+
+
+@api.route('/todos', methods=['POST'])
+def create_todo():
+    try:
+        data = request.get_json()
+        todo = Todo(title=data['title'])
+        db.session.add(todo)
+        db.session.commit()
+        return jsonify({'success': True, 'data': todo.to_dict()}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'error': str(e)}), 500
+
+อธิบาย:
+Test นี้จำลองให้ db.session.commit() เกิดข้อผิดพลาด (mock error)
+ระบบหลักต้อง rollback transaction และตอบกลับ 500 Internal Server Error
+เพื่อยืนยันว่าระบบมีการจัดการข้อผิดพลาด (Error Handling) อย่างปลอดภัย
 
 ```
 
