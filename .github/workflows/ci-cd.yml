@@ -147,40 +147,14 @@ jobs:
           echo "❌ Deployment health check failed"
           exit 1
 
-  # -------------------- 🚄 Job 4: Deploy to Railway --------------------
-  deploy-railway:
-    name: Deploy to Railway
-    runs-on: ubuntu-latest
-    needs: [test, build]   # ✅ ให้รอทั้ง test และ build เสร็จก่อน
-    if: github.ref == 'refs/heads/main'
+# -------------------- 🚄 Job 4: Deploy to Railway --------------------
+deploy-railway:
+  name: Deploy to Railway
+  runs-on: ubuntu-latest
+  needs: [test, build]  # ✅ รอ CI ผ่านก่อนเท่านั้น
+  if: github.ref == 'refs/heads/main'
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy to Railway
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-        run: |
-          railway link ${{ secrets.RAILWAY_PROJECT_ID }}
-          railway up --detach
-
-      - name: Wait for deployment
-        run: sleep 90   # ⏱️ เพิ่มเวลา wait สำหรับ CI หรือ deploy ช้าหน่อย
-
-      - name: Health check
-        run: |
-          set -e
-          for i in {1..5}; do
-            if curl -f ${{ secrets.RAILWAY_APP_URL }}/api/health; then
-              echo "✅ Railway deployment successful!"
-              exit 0
-            fi
-            echo "Attempt $i failed, retrying..."
-            sleep 10
-          done
-          echo "❌ Railway deployment health check failed"
-          exit 1
+  steps:
+    - name: Info
+      run: echo "✅ CI Passed! Ready to deploy via Railway manually."
+      
