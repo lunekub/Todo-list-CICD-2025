@@ -114,11 +114,11 @@ def update_todo(todo_id):
             'data': todo.to_dict(),
             'message': 'Todo updated successfully'
         }), 200
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({
             'success': False,
-            'error': 'Failed to update todo'
+            'error': f'Failed to update todo: {str(e)}'
         }), 500
 
 
@@ -140,9 +140,9 @@ def delete_todo(todo_id):
             'success': True,
             'message': 'Todo deleted successfully'
         }), 200
-    except SQLAlchemyError:
+    except SQLAlchemyError as e:
         db.session.rollback()
         return jsonify({
             'success': False,
-            'error': 'Failed to delete todo'
+            'error': f'Failed to delete todo: {str(e)}'
         }), 500
