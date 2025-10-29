@@ -148,13 +148,12 @@ jobs:
           exit 1
 
 # -------------------- 🚄 Job 4: Deploy to Railway --------------------
-deploy-railway:
-  name: Deploy to Railway
-  runs-on: ubuntu-latest
-  needs: [test, build]  # ✅ รอ CI ผ่านก่อนเท่านั้น
-  if: github.ref == 'refs/heads/main'
+  deploy-railway:
+    name: Deploy to Railway
+    runs-on: ubuntu-latest
+    needs: [test, build]  # ✅ รอ CI ผ่านก่อนเท่านั้น
+    if: github.ref == 'refs/heads/main'
 
   steps:
     - name: Info
       run: echo "✅ CI Passed! Ready to deploy via Railway manually."
-      
